@@ -1,9 +1,5 @@
--- ====================================================================
--- PROYECTO: Validación de Calidad de Datos (Data Quality Audit)
--- AUTOR: Estefany Manjarres
--- DESCRIPCIÓN: Consultas SQL para auditar, detectar inconsistencias,
+-- Consultas SQL para auditar, detectar inconsistencias,
 --              duplicados y registros nulos en tablas operativas.
--- ====================================================================
 
 -- 1. DETECCIÓN DE VALORES NULOS O CRÍTICOS FALTANTES
 -- Muestra registros que no tienen correo electrónico ni teléfono registrado.
