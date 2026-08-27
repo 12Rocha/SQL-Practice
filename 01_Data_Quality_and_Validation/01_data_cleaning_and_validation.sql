@@ -34,9 +34,6 @@ WHERE email IS NULL
 -- Se excluyen valores NULL y cadenas vacías para evitar que
 -- múltiples registros sin correo sean interpretados como
 -- duplicados.
---
--- TRIM también permite excluir valores que contengan únicamente
--- espacios en blanco.
 -- ============================================================
 
 SELECT 
@@ -47,6 +44,62 @@ WHERE email IS NOT NULL
   AND TRIM(email) <> ''
 GROUP BY email
 HAVING COUNT(*) > 1;
+
+
+-- ============================================================
+-- 2.1. IDENTIFICACIÓN DE DUPLICADOS CON ROW_NUMBER()
+-- ============================================================
+-- Asigna un ranking a los registros que comparten el mismo
+-- correo electrónico.
+--
+-- duplicate_rank = 1 → Registro principal/candidato a conservar.
+-- duplicate_rank > 1 → Posibles duplicados para revisión.
+--
+-- IMPORTANTE:
+-- El ranking no determina automáticamente qué registro debe
+-- eliminarse. En un entorno real se debe definir una regla
+-- de supervivencia (survivorship rule).
+-- ============================================================
+
+SELECT
+    customer_id,
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    ROW_NUMBER() OVER (
+        PARTITION BY email
+        ORDER BY customer_id
+    ) AS duplicate_rank
+FROM customers
+WHERE email IS NOT NULL
+  AND TRIM(email) <> '';
+
+
+-- ============================================================
+-- 2.2. REGISTROS CANDIDATOS A REVISIÓN
+-- ============================================================
+-- Muestra únicamente los registros cuyo ranking es mayor
+-- a 1, es decir, posibles duplicados.
+-- ============================================================
+
+SELECT *
+FROM (
+    SELECT
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone_number,
+        ROW_NUMBER() OVER (
+            PARTITION BY email
+            ORDER BY customer_id
+        ) AS duplicate_rank
+    FROM customers
+    WHERE email IS NOT NULL
+      AND TRIM(email) <> ''
+) AS ranked_customers
+WHERE duplicate_rank > 1;
 
 
 -- ============================================================
